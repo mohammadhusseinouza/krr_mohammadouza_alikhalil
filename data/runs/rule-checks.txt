@@ -1,0 +1,34 @@
+python data/rule_checks.py   (2026-10-20, the snapshot mdb-734-202608240120)
+
+Check 1: Does every row of stop_times point to a trip in trips.txt and a stop in stops.txt?
+  Result : 0 of 324165 stop times break it
+  Meaning: No exceptions: a rule across three tables that the data always obeys, and no file states it.
+
+Check 2: Inside each trip, do stop_sequence values run 1, 2, 3... and do times never go backwards?
+  Result : 0 backward steps and 0 sequence gaps across 9239 trips
+  Meaning: Again no exceptions: a rule between rows of one table, which a column type can never express.
+
+Check 3: Does each route, in each direction, show one headsign (the destination on the sign)?
+  162 route-directions: 157 have one headsign. The others:
+    route 10C, direction 0: {'10C WESTPHAL VIA MICMAC': 106, '10 DALHOUSIE VIA SPRING GARDEN': 5}
+    route 10C, direction 1: {'10C DALHOUSIE VIA SPRING GARDEN': 104, '10C MICMAC TERMINAL': 6, '10C TACOMA CENTRE': 1}
+    route 62, direction 1: {'62 BRIDGE TERM VIA MANOR PARK': 55, '62 PENHORN TERMINAL': 1}
+    route 72, direction 1: {'Portland Hills': 76, 'PORTLAND HILLS': 2}
+    route 9B, direction 1: {'9B DOWNTOWN VIA SPRING GARDEN': 68, 'Dentith': 2}
+  Meaning: almost always one, except a few short or diverted trips, and route 72 where the same
+  sign is spelled in two cases. The pattern is real; its exceptions are where the questions are.
+
+Check 4: Do trips stop only at stops, never at a station itself, and is every parent_station a station?
+  Result : 0 stop times at one of the 11 stations; 60 of 60 parent_station values point to a station
+  Meaning: A station is a place that holds stops; vehicles stop at the stops inside it. Two kinds of thing in one table.
+
+Check 5: Are arrival times all in HH:MM:SS, and all below 24:00:00?
+  Result : 76774 of 324165 start with a space and one hour digit (e.g. ' 5:49:00'); 6847 are 24:00:00 or later (latest 26:00:00), on 217 trips
+  Meaning: Opposite verdicts. The space breaks the GTFS format (HH:MM:SS); the hours past 24 are correct GTFS: a trip after midnight still belongs to the service day it started on.
+
+Check 6: Once the '(stop code)' is removed from stop_name, is each name one stop?
+  Result : 133 names are shared by 267 stops, for example 'Barrington St Before North St':
+    stop_id  stop_lat   stop_lon
+       6115 44.659348 -63.588683
+       2021  44.65819 -63.586855
+  Meaning: Different stops with their own id and position, 12 to 394 m apart (median 89 m, session1_facts.py). The name alone does not identify a stop; merging them would be wrong.

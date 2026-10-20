@@ -1,0 +1,14 @@
+python link_prediction.py   (pykeen 1.11.1, torch 2.8.0 CPU, 2026-10-20; Windows 11 CPU, about a minute; PyKEEN's log lines on stderr left out)
+5,160 serves links (81 routes), 2,697 next links
+seed 0: 516 hidden links scored (0 left out: their stop appears in no other link)
+  TransE      MRR 0.185  Hits@1 0.076
+  popularity  MRR 0.106  Hits@1 0.033
+  neighbours  MRR 0.889  Hits@1 0.839
+seed 1: 516 hidden links scored (0 left out: their stop appears in no other link)
+  TransE      MRR 0.159  Hits@1 0.058
+  popularity  MRR 0.104  Hits@1 0.035
+  neighbours  MRR 0.871  Hits@1 0.824
+seed 2: 516 hidden links scored (0 left out: their stop appears in no other link)
+  TransE      MRR 0.197  Hits@1 0.099
+  popularity  MRR 0.116  Hits@1 0.037
+  neighbours  MRR 0.878  Hits@1 0.831

@@ -1,0 +1,27 @@
+python er/match_stops.py   (2026-10-19; OpenStreetMap snapshot of 2026-10-19T20:01:51Z, (c) OpenStreetMap contributors, ODbL)
+2,536 OpenStreetMap stops, 2,347 GTFS stops: 5,951,992 possible pairs, 8,785 after blocking on 200 m
+109 OpenStreetMap stops have no GTFS stop within 200 m
+answer key: 2,279 OpenStreetMap stops carry a feed stop code; 257 do not (a stop not in this feed, or no ref)
+
+threshold 6: 2,249 matches, 2,186 right. precision 0.972, recall 0.959
+  63 wrong matches, 93 misses; the first 5 of each:
+  wrong match  '6000 - Akerley Blvd After Burnside Dr'          -> 'Akerley Blvd After Burnside Dr (2360)', 4 m, score 17.1 (truth: not in the feed, ref 6000)
+  wrong match  '2367 - Larry Uteck Blvd Before Brookline Dr'    -> 'Larry Uteck Blvd Before Brookline Dr (2367)', 3 m, score 17.1 (truth: not in the feed, ref none)
+  wrong match  '6861 - Herring Cove Rd After Green Acres Rd'    -> 'Herring Cove Rd After Green Acres Rd (6862)', 34 m, score 11.9 (truth: 6861)
+  wrong match  '7345 - North St Before Dublin St'               -> 'North St Before Dublin St (7344)', 38 m, score 11.9 (truth: 7345)
+  wrong match  '6179 - St Margarets Bay Rd Before Sheppards Run' -> 'St Margarets Bay Rd Before Sheppards Run (6157)', 28 m, score 11.9 (truth: 6179)
+  missed       '6238'                                              (truth: 6238; best score 5.5: 15 to 50 m)
+  missed       '6230'                                              (truth: 6230; best score 5.5: 15 to 50 m)
+  missed       '6261'                                              (truth: 6261; best score 5.5: 15 to 50 m)
+  missed       '6001 - Akerley Blvd At Civic 75'                   (truth: 6001; best score 0.8: 50 to 200 m, name same)
+  missed       '6282'                                              (truth: 6282; best score 5.5: 15 to 50 m)
+
+threshold 14: 1,843 matches, 1,841 right. precision 0.999, recall 0.808
+  2 wrong matches, 438 misses; the first 5 of each:
+  wrong match  '6000 - Akerley Blvd After Burnside Dr'          -> 'Akerley Blvd After Burnside Dr (2360)', 4 m, score 17.1 (truth: not in the feed, ref 6000)
+  wrong match  '2367 - Larry Uteck Blvd Before Brookline Dr'    -> 'Larry Uteck Blvd Before Brookline Dr (2367)', 3 m, score 17.1 (truth: not in the feed, ref none)
+  missed       '6238'                                              (truth: 6238; best score 5.5: 15 to 50 m)
+  missed       '6281'                                              (truth: 6281; best score 10.6: under 15 m)
+  missed       '6230'                                              (truth: 6230; best score 5.5: 15 to 50 m)
+  missed       '6274'                                              (truth: 6274; best score 10.6: under 15 m)
+  missed       '6224'                                              (truth: 6224; best score 10.6: under 15 m)

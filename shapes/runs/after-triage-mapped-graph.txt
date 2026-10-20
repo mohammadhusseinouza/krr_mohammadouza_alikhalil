@@ -1,0 +1,20 @@
+python ../session-04-shacl/validate.py --data halifax-mapped.nt --data vocabulary.ttl   (pySHACL 0.40.1, values read as written, 2026-10-19; 664 s wall time; the mapped graph, SQLite source, identical to the PostgreSQL one)
+data: 2,034,566 triples from halifax-mapped.nt, vocabulary.ttl
+shapes: halifax-shapes.ttl
+  focus nodes     81  A route shows one headsign per direction
+  focus nodes  2,347  A stop shares its name with another stop
+  focus nodes  9,239  A trip is a night trip exactly when it runs past midnight
+  focus nodes  9,239  A trip's stops are numbered 1, 2, 3... without gaps
+  focus nodes     82  Every calendar date rule
+  focus nodes     81  Every route
+  focus nodes      9  Every service
+  focus nodes  2,347  Every stop
+  focus nodes 324,165  Every stop time
+  focus nodes  9,239  Every trip
+
+validated in 616.0 s. conforms (SHACL): False. 0 Violation, 5 Warning, 268 Info
+  Warning        5  A route shows one headsign per direction | SPARQL   e.g. route/10C, route/10C, route/62
+  Info         268  A stop shares its name with another stop | SPARQL   e.g. stop/2005, stop/2006, stop/2021
+
+GATE: PASS, no violations (warnings are listed above).
+exit code 0

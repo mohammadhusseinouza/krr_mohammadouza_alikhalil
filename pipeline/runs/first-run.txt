@@ -1,0 +1,44 @@
+docker compose up --build   (first run from an empty build/, 2026-10-20, Docker Desktop on Windows 11)
+1 source: the Halifax feed, SHA-256 checked; 8 tables, 324,165 stop times -> build/halifax.sqlite
+2 map: 2,034,562 triples in 78 s -> build/graph.nt
+  (the whole graph: about 11 minutes)
+  data: 2,034,724 triples from graph.nt, ontology.ttl
+  shapes: shapes.ttl
+    focus nodes     81  A route shows one headsign per direction
+    focus nodes  2,347  A stop shares its name with another stop
+    focus nodes  9,239  A trip is a night trip exactly when it runs past midnight
+    focus nodes  9,239  A trip's stops are numbered 1, 2, 3... without gaps
+    focus nodes     82  Every calendar date rule
+    focus nodes     81  Every route
+    focus nodes      9  Every service
+    focus nodes  2,347  Every stop
+    focus nodes 324,165  Every stop time
+    focus nodes  9,239  Every trip
+  
+  validated in 650.4 s. conforms (SHACL): False. 0 Violation, 5 Warning, 268 Info
+    Warning        5  A route shows one headsign per direction | SPARQL   e.g. route/10C, route/10C, route/62
+    Info         268  A stop shares its name with another stop | SPARQL   e.g. stop/2005, stop/2006, stop/2021
+  
+  GATE: PASS, no violations (warnings are listed above).
+3 validate: validated in 650.4 s. conforms (SHACL): False. 0 Violation, 5 Warning, 268 Info -> build/shacl-gate.txt
+4 describe: 480 VoID triples -> build/void.ttl   [480: graph.nt read as N-Triples, which loses the blank date ranges; fixed since, 486]
+5 provenance: 8 source files and 4 more inputs, with their SHA-256 -> build/provenance.ttl
+fuseki-1    | [2026-10-20 18:40:06] Fuseki     INFO  [1] POST http://fuseki:3030/kr/update
+fuseki-1    | [2026-10-20 18:40:06] Fuseki     INFO  [1] 200 OK (60 ms)
+fuseki-1    | [2026-10-20 18:40:06] Fuseki     INFO  [2] POST http://fuseki:3030/kr/data?default
+fuseki-1    | [2026-10-20 18:40:26] Fuseki     INFO  [2] Body: Content-Length=299761074, Content-Type=application/n-triples, Charset=null => N-Triples : Count=2034562 Triples=2034562 Quads=0
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [2] 200 OK (20.929 s)
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [3] POST http://fuseki:3030/kr/data?default
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [3] Body: Content-Length=14653, Content-Type=text/turtle, Charset=null => Turtle : Count=162 Triples=162 Quads=0
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [3] 200 OK (65 ms)
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [4] POST http://fuseki:3030/kr/data?default
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [4] Body: Content-Length=49209, Content-Type=text/turtle, Charset=null => Turtle : Count=892 Triples=892 Quads=0
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [4] 200 OK (74 ms)
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [5] POST http://fuseki:3030/kr/data?graph=https://ul.edu.lb/kr/id/graph/halifax/provenance
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [5] Body: Content-Length=4665, Content-Type=text/turtle, Charset=null => Turtle : Count=66 Triples=66 Quads=0
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [5] 201 Created (56 ms)
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [6] GET http://fuseki:3030/kr/sparql?query=SELECT+%28COUNT%28%2A%29+AS+%3Fn%29+WHERE+%7B+%3Fs+%3Fp+%3Fo+%7D
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [6] Query = SELECT (COUNT(*) AS ?n) WHERE { ?s ?p ?o }
+fuseki-1    | [2026-10-20 18:40:27] Fuseki     INFO  [6] 200 OK (254 ms)
+6 load: 2,035,616 triples in the default graph, provenance in a named graph, in 21 s -> http://fuseki:3030/kr
+done

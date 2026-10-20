@@ -1,0 +1,300 @@
+## ontology.ttl, release 1.1.0 (version IRI https://ul.edu.lb/kr/transit/1.1.0)
+##
+## Changes from 1.0.0 (https://ul.edu.lb/kr/transit/1.0.0):
+##   - tr:CancelledTrip deleted: it answered no competency question, and a
+##     static GTFS feed never says a single trip was cancelled (that is GTFS
+##     Realtime, which this system does not use).
+##   - tr:FerryTrip aligned outward: skos:closeMatch schema:BoatTrip.
+##
+## The Halifax transit ontology: Linked GTFS, reused, plus the few classes
+## our competency questions need (competency_questions.md). Open it from
+## this folder in Protege (catalog-v001.xml finds the imports), run ELK
+## then HermiT: no class turns red (reasoner-run.txt). Compare it with
+## ontology-v0.ttl, the first draft, which contains the errors fixed here.
+##
+## What was wrong in v0, and why (verified with HermiT and ELK):
+##
+## 1. tr:FerryTrip used gtfs:route the way the data does, trip to route.
+##    That use is right. The published vocabulary is not: Linked GTFS
+##    writes  gtfs:route rdfs:range gtfs:Route, gtfs:FareRule , and two
+##    ranges mean "a Route AND a FareRule" (Session 2's
+##    rdfs_entailment_demo.py showed RDFS turning 81 routes into fare
+##    rules). This file says no route is a fare rule, so whatever a trip
+##    runs on would have to be both, which nothing can be. Ferry trip
+##    was impossible, and ELK and HermiT both found it.
+##    Fix: import a corrected copy of Linked GTFS
+##    (linked-gtfs-corrected.ttl, in this folder), where each pair of domains or ranges is one
+##    owl:unionOf. An imported axiom cannot be cancelled by adding
+##    another, so the copy is the only way, and its header lists every
+##    change. The lasting fix is upstream: report it to the authors.
+##    Deleting our disjointness axiom would hide the error, not fix it.
+##
+## 2. tr:SingleRouteStop used gtfs:route for "this stop is served by
+##    this route", because the name fits. Its domain is gtfs:Trip: the
+##    subject of gtfs:route is a trip. A stop is not a trip, so nothing
+##    could be a Single-route stop. ELK reported only Ferry trip, because
+##    ELK ignores the "exactly 1" restriction this class uses; HermiT
+##    reads it and reports both. The corrected vocabulary does not help
+##    here: the vocabulary is right, our reuse was wrong.
+##    Fix: use our own tr:servedByRoute, the property tr:TransferStop
+##    already used, whose domain is a stop. Lesson: never reuse a
+##    property from its name alone; read its domain and range first.
+##
+## 3. tr:FerryTrip was only a SubClassOf (a necessary condition), so a
+##    reasoner could never place a trip in it by itself. It is now an
+##    EquivalentTo (a defined class): any trip on a ferry route IS a
+##    ferry trip, and the reasoner classifies it.
+##
+## Every class reuses a real Linked GTFS class: gtfs:Trip, gtfs:Route,
+## gtfs:Stop, gtfs:CalendarDateRule, and the published route types
+## gtfs:Bus and gtfs:Ferry. Nothing GTFS already names is minted again.
+
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix gtfs: <http://vocab.gtfs.org/terms#> .
+@prefix tr:   <https://ul.edu.lb/kr/transit#> .
+@prefix schema: <http://schema.org/> .
+
+<https://ul.edu.lb/kr/transit#> a owl:Ontology ;
+    owl:versionIRI <https://ul.edu.lb/kr/transit/1.1.0> ;
+    owl:versionInfo "1.1.0" ;
+    owl:priorVersion <https://ul.edu.lb/kr/transit/1.0.0> ;
+    rdfs:label "UL Knowledge Representation project: Halifax transit reference ontology" ;
+    owl:imports <https://ul.edu.lb/kr/linked-gtfs-corrected> .
+
+## Three annotation properties the classes below use. Declared here once
+## so the reasoner and ROBOT both recognise them as annotations, not as
+## undeclared punning (skos:closeMatch between classes would otherwise be
+## read as an object property, outside OWL 2 DL).
+
+skos:closeMatch a owl:AnnotationProperty .
+
+tr:answersCQ a owl:AnnotationProperty ;
+    rdfs:label "answers competency question" ;
+    rdfs:comment "The competency question (see competency_questions.md) this class exists to answer. A class with none has not earned its place, per the lecture's own rule." .
+
+tr:profile a owl:AnnotationProperty ;
+    rdfs:label "intended OWL profile" ;
+    rdfs:comment "EL or DL: which profile this class was written for. The course's working rule (lecture slide 'Speed against expressiveness'): a class stays EL as long as it only uses conjunction, someValuesFrom and hasValue; allValuesFrom, cardinality, complementOf or inverseOf push it to DL." .
+
+########################################################################
+## What this file adds to Linked GTFS before any competency question
+########################################################################
+
+## Linked GTFS is an RDFS vocabulary: it calls every property an
+## rdf:Property. OWL needs to know whether a property links two things
+## or a thing and a value, so the properties this file uses are declared
+## here. A declaration adds no meaning beyond that.
+
+gtfs:route a owl:ObjectProperty .
+gtfs:routeType a owl:ObjectProperty .
+gtfs:trip a owl:ObjectProperty .
+gtfs:stop a owl:ObjectProperty .
+gtfs:service a owl:ObjectProperty .
+gtfs:serviceRule a owl:ObjectProperty .
+gtfs:parentStation a owl:ObjectProperty .
+gtfs:dateAddition a owl:DatatypeProperty .
+
+## One row of each GTFS table is one kind of thing, and a thing of one
+## kind is never a thing of another: a route is not a trip, a stop is not
+## a fare rule. GTFS says so by giving each its own table and its own id.
+## Linked GTFS never says it, so this file does. It is what lets a
+## reasoner notice a definition that mixes two kinds up.
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( gtfs:Agency gtfs:Feed gtfs:Route gtfs:Trip gtfs:StopTime
+                  gtfs:Stop gtfs:Station gtfs:Service gtfs:ServiceRule
+                  gtfs:FareRule gtfs:Shape ) .
+
+########################################################################
+## CQ 1. Which trips run past midnight, and on which routes?
+########################################################################
+
+## The same class Session 2's converter already writes. It stays a
+## primitive class (SubClassOf): "past midnight" means a stop time of
+## 24:00:00 or later, a comparison of durations OWL cannot express, so
+## the converter decides it and the ontology only places it.
+
+tr:NightTrip a owl:Class ;
+    rdfs:subClassOf gtfs:Trip ;
+    rdfs:label "Night trip"@en ;
+    skos:definition "A trip with at least one stop time at 24:00:00 or later, that is, after midnight of its service day."@en ;
+    tr:profile "EL" ;
+    tr:answersCQ "Which trips run past midnight, and on which routes?" .
+
+########################################################################
+## CQ 2. Which routes are ferry routes, and which are bus routes?
+########################################################################
+
+## Defined classes (EquivalentTo): a route IS a ferry route exactly when
+## its route type is gtfs:Ferry. gtfs:Ferry and gtfs:Bus are individuals
+## Linked GTFS publishes, the values of routes.txt's route_type 4 and 3.
+
+tr:FerryRoute a owl:Class ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf (
+            gtfs:Route
+            [ a owl:Restriction ; owl:onProperty gtfs:routeType ; owl:hasValue gtfs:Ferry ]
+        )
+    ] ;
+    rdfs:label "Ferry route"@en ;
+    skos:definition "A route whose vehicles are ferries (GTFS route_type 4)."@en ;
+    tr:profile "EL" ;
+    tr:answersCQ "Which routes are ferry routes, and which are bus routes?" .
+
+tr:BusRoute a owl:Class ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf (
+            gtfs:Route
+            [ a owl:Restriction ; owl:onProperty gtfs:routeType ; owl:hasValue gtfs:Bus ]
+        )
+    ] ;
+    rdfs:label "Bus route"@en ;
+    skos:definition "A route whose vehicles are buses (GTFS route_type 3)."@en ;
+    tr:profile "EL" ;
+    tr:answersCQ "Which routes are ferry routes, and which are bus routes?" .
+
+########################################################################
+## CQ 3. Which trips cross the harbour by ferry, and when do they run?
+########################################################################
+
+## A DEFINED class (EquivalentTo). Reuses gtfs:route exactly as the
+## data does, a trip linked to the route it runs on, and chains into
+## CQ 2's tr:FerryRoute rather than restating what a ferry is. Because
+## it is EquivalentTo and not just SubClassOf, the reasoner puts
+## matching trips into it by itself; sample-trips.ttl shows this.
+## Still EL: an intersection and a someValuesFrom.
+
+tr:FerryTrip a owl:Class ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf (
+            gtfs:Trip
+            [ a owl:Restriction ; owl:onProperty gtfs:route ; owl:someValuesFrom tr:FerryRoute ]
+        )
+    ] ;
+    rdfs:label "Ferry trip"@en ;
+    skos:definition "A trip that runs on a ferry route."@en ;
+    # Outward alignment. schema.org defines BoatTrip as "A trip on a commercial
+    # ferry line" (checked 2026-10-20). Close, not exact: ours is one scheduled
+    # run in a timetable, schema.org's any ferry trip, a journey or an offer.
+    skos:closeMatch schema:BoatTrip ;
+    tr:profile "EL" ;
+    tr:answersCQ "Which trips cross the harbour by ferry, and when do they run?" .
+
+########################################################################
+## CQ 4. If route R is cut, which stops lose their only route?
+########################################################################
+
+## Linked GTFS has a property named gtfs:route, which sounds right but
+## means something else: its subject is a trip (see the header). So this
+## class uses the project's own tr:servedByRoute, declared under CQ 5.
+## "The only one" is a cardinality fact, which is why this class is DL.
+
+tr:SingleRouteStop a owl:Class ;
+    rdfs:subClassOf gtfs:Stop ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty tr:servedByRoute ;
+        owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+        owl:onClass gtfs:Route
+    ] ;
+    rdfs:label "Single-route stop"@en ;
+    skos:definition "A stop served by exactly one route, so cutting that route leaves it with no service."@en ;
+    tr:profile "DL" ;
+    tr:answersCQ "If route R is cut, which stops lose their only route?" .
+
+########################################################################
+## CQ 5. Where can a rider change from one route to another?
+########################################################################
+
+## "Two or more" is a cardinality fact again, so this one is DL for the
+## same reason CQ 4 is. The relationship is this project's own pair of
+## properties: tr:servesStop is the triple Session 2's Q7 CONSTRUCT
+## built from the stop times, and tr:servedByRoute reads it the other
+## way, from the stop.
+
+tr:TransferStop a owl:Class ;
+    rdfs:subClassOf gtfs:Stop ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty tr:servedByRoute ;
+        owl:minQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+        owl:onClass gtfs:Route
+    ] ;
+    rdfs:label "Transfer stop"@en ;
+    skos:definition "A stop served by two or more routes, where a rider can change from one to another."@en ;
+    tr:profile "DL" ;
+    tr:answersCQ "Where can a rider change from one route to another?" .
+
+tr:servesStop a owl:ObjectProperty ;
+    rdfs:label "serves stop"@en ;
+    rdfs:comment "Some trip of this route calls at this stop. Not in the GTFS tables directly: Session 2's Q7 CONSTRUCT derives it from the stop times."@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:Stop .
+
+tr:servedByRoute a owl:ObjectProperty ;
+    rdfs:label "served by route"@en ;
+    rdfs:comment "This stop is called at by some trip of this route; tr:servesStop read from the stop's side."@en ;
+    owl:inverseOf tr:servesStop ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:Route .
+
+########################################################################
+## CQ 6. On a given date, which services are cancelled, and which run
+## in their place?
+########################################################################
+
+## Session 2's Q6: on Thanksgiving, 12 October 2026, calendar_dates.txt
+## removes the weekday services and adds the Sunday ones. A calendar
+## date rule with gtfs:dateAddition false is a removal, true an addition.
+## Defined classes, so the reasoner sorts the rules by itself.
+## DL, not EL, although they use only an intersection and a hasValue:
+## the value is an xsd:boolean, and xsd:boolean is not one of the
+## datatypes the EL profile allows. ELK leaves these two classes empty;
+## HermiT fills them.
+
+tr:ServiceRemoval a owl:Class ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf (
+            gtfs:CalendarDateRule
+            [ a owl:Restriction ; owl:onProperty gtfs:dateAddition ; owl:hasValue false ]
+        )
+    ] ;
+    rdfs:label "Service removal"@en ;
+    skos:definition "A calendar date rule that takes a service off one date (GTFS exception_type 2)."@en ;
+    tr:profile "DL" ;
+    tr:answersCQ "On a given date, which services are cancelled, and which run in their place?" .
+
+tr:ServiceAddition a owl:Class ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf (
+            gtfs:CalendarDateRule
+            [ a owl:Restriction ; owl:onProperty gtfs:dateAddition ; owl:hasValue true ]
+        )
+    ] ;
+    rdfs:label "Service addition"@en ;
+    skos:definition "A calendar date rule that puts a service on one date (GTFS exception_type 1)."@en ;
+    tr:profile "DL" ;
+    tr:answersCQ "On a given date, which services are cancelled, and which run in their place?" .
+
+## Two traps, both named in the lecture:
+## 1. Domain and range are not constraints, they are entailment rules.
+##    Asserting one lets the reasoner classify anything you attach it
+##    to; it never rejects anything. Session 4 (SHACL) builds real
+##    constraints.
+## 2. owl:sameAs is a logical identity the reasoner propagates in both
+##    directions, forever. "Halifax stop 1073 and the OpenStreetMap ferry
+##    terminal are probably the same place" is a similarity claim with a
+##    confidence, and belongs in the Session 5 entity resolution layer.
+##
+## Eight tr:answersCQ annotations, for six competency questions (CQ 2
+## and CQ 6 are each answered by a pair of classes), matching
+## competency_questions.md. Every class of ours has one (1.1.0 deleted the
+## one that had none, CancelledTrip).

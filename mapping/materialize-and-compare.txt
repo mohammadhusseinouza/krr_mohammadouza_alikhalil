@@ -1,0 +1,25 @@
+python materialize.py --sqlite   (Morph-KGC 2.10.0 on rdflib 7.6.0, 2026-10-19)
+halifax-mapping.ttl over halifax.db: 2,034,562 triples in 61.5 s -> halifax-mapped.nt
+
+python materialize.py   (the same, from PostgreSQL 16; the two files are identical, blank node labels aside)
+halifax-mapping.ttl over PostgreSQL: 2,034,562 triples in 59.4 s -> halifax-mapped.nt
+
+python compare_with_session2.py
+Session 2 graph, data only   2,034,560 triples  (vocabulary and schema left out)
+mapped graph                 2,034,562 triples
+
+named triples in both          2,034,543
+  of which the same value, written differently 23,918
+     11,959 departureTime: Session 2 'P1DT1H23M28S', mapped 'PT25H23M28S'
+     11,959 arrivalTime: Session 2 'P1DT31M', mapped 'PT24H31M'
+only in Session 2's graph              1
+only in the mapped graph               3
+periods (blank nodes) in both          8 of 8 and 8
+
+Only in Session 2's graph:
+  feed/halifax/2026_08_August_20260806  dct:language  'en'
+
+Only in the mapped graph:
+  feed/halifax/2026_08_August_20260806  dct:description  'Timetable of Halifax Transit, valid from 2026-08-24 to 2026-11-29.'
+  feed/halifax/2026_08_August_20260806  dct:language  http://publications.europa.eu/resource/authority/language/ENG
+  feed/halifax/2026_08_August_20260806  dct:title  'Halifax Transit GTFS feed, version 2026_08_August_20260806'

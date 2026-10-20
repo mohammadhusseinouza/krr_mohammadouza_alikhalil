@@ -1,0 +1,77 @@
+# The test set: 13 questions the graph can answer and 3 it cannot. Question 16 was
+# added in the Session 7 lab (Part B, Y3); none is one of the examples.
+# The same layout as the TEXT2SPARQL questions files (dataset, questions,
+# question.en), so text2sparql-client can read it too; "gold" (the right
+# query) and "refuse" are this course's own fields, which it ignores.
+
+dataset:
+  id: https://ul.edu.lb/kr/halifax/
+  prefix: |
+    PREFIX gtfs: <http://vocab.gtfs.org/terms#>
+    PREFIX tr: <https://ul.edu.lb/kr/transit#>
+    PREFIX dct: <http://purl.org/dc/terms/>
+    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+questions:
+  - id: 1
+    question: {en: "How many trips are there, night trips included?"}
+    gold: |
+      SELECT (COUNT(DISTINCT ?t) AS ?n) WHERE { { ?t a gtfs:Trip } UNION { ?t a tr:NightTrip } }
+  - id: 2
+    question: {en: "How many night trips are there?"}
+    gold: |
+      SELECT (COUNT(?t) AS ?n) WHERE { ?t a tr:NightTrip }
+  - id: 3
+    question: {en: "Which routes are ferry routes?"}
+    gold: |
+      SELECT ?r WHERE { ?r gtfs:routeType gtfs:Ferry }
+  - id: 4
+    question: {en: "How many trips run on route 1?"}
+    gold: |
+      SELECT (COUNT(?t) AS ?n) WHERE { ?t gtfs:route <https://ul.edu.lb/kr/id/route/halifax/1> }
+  - id: 5
+    question: {en: "How many different stops does route 1 call at?"}
+    gold: |
+      SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE { ?st gtfs:trip/gtfs:route <https://ul.edu.lb/kr/id/route/halifax/1> ; gtfs:stop ?s }
+  - id: 6
+    question: {en: "Which routes have at least one night trip?"}
+    gold: |
+      SELECT DISTINCT ?r WHERE { ?t a tr:NightTrip ; gtfs:route ?r }
+  - id: 7
+    question: {en: "Which stops does route FerD call at?"}
+    gold: |
+      SELECT DISTINCT ?s WHERE { ?st gtfs:trip/gtfs:route <https://ul.edu.lb/kr/id/route/halifax/FerD> ; gtfs:stop ?s }
+  - id: 8
+    question: {en: "Which stops belong to Bridge Terminal?"}
+    gold: |
+      SELECT ?s WHERE { ?st foaf:name "Bridge Terminal" . ?s gtfs:parentStation ?st }
+  - id: 9
+    question: {en: "What is the name of stop 6001?"}
+    gold: |
+      SELECT ?name WHERE { <https://ul.edu.lb/kr/id/stop/halifax/6001> foaf:name ?name }
+  - id: 10
+    question: {en: "Which services are cancelled on 12 October 2026?"}
+    gold: |
+      SELECT ?sv WHERE { ?sv gtfs:serviceRule [ dct:date "2026-10-12"^^xsd:date ; gtfs:dateAddition false ] }
+  - id: 11
+    question: {en: "Which route has the most trips?"}
+    gold: |
+      SELECT ?r WHERE { ?t gtfs:route ?r } GROUP BY ?r ORDER BY DESC(COUNT(?t)) LIMIT 1
+  - id: 12
+    question: {en: "Which services run on Saturdays?"}
+    gold: |
+      SELECT ?sv WHERE { ?sv gtfs:serviceRule [ a gtfs:CalendarRule ; gtfs:saturday true ] }
+  - id: 16
+    question: {en: "How many trips run on route 10A?"}
+    gold: |
+      SELECT (COUNT(?t) AS ?n) WHERE { ?t gtfs:route <https://ul.edu.lb/kr/id/route/halifax/10A> }
+  - id: 13
+    question: {en: "Which stops are wheelchair accessible?"}
+    refuse: "the feed gives no wheelchair information (0 in every row), so the graph has none"
+  - id: 14
+    question: {en: "How many passengers rode route 1 last month?"}
+    refuse: "the graph has no ridership"
+  - id: 15
+    question: {en: "Which buses are running late right now?"}
+    refuse: "the graph is a timetable: no real-time positions or delays"

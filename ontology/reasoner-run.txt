@@ -1,0 +1,15 @@
+Reasoner runs: HermiT through owlready2 0.51, 2026-10-20, from ontology/ (python reasoner.py FILE).
+Release 1.1.0. Profile: OWL 2 DL. Every class of ours is marked with tr:profile: 4 are EL, 4 need DL.
+Single-route stop and Transfer stop count routes (exactly 1, min 2: cardinality is not EL);
+Service removal and Service addition use xsd:boolean, which is not an EL datatype. ELK in
+Protege classifies the 4 EL classes; HermiT, below, classifies all 8.
+
+python reasoner.py ontology.ttl
+Impossible classes (equivalent to owl:Nothing): none
+
+python reasoner.py ontology-v0.ttl
+Impossible classes (equivalent to owl:Nothing): Ferry trip, Single-route stop
+
+The release imports the corrected copy of Linked GTFS and uses tr:servedByRoute;
+v0 imports Linked GTFS as published and reuses gtfs:route on a stop. Why each class was
+impossible, axiom by axiom: explanations/.

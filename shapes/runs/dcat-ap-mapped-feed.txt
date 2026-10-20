@@ -1,0 +1,5 @@
+python ../session-04-shacl/fetch_dcatap.py --data halifax-mapped.nt --data ../data/linked-gtfs/gtfs.ttl   (pySHACL 0.40.1, 2026-10-19; about a minute: it reads the whole mapped graph)
+Only the last lines differ from Session 4's run (reference-outputs/fetch-dcatap.txt there):
+
+
+Our feed against DCAT-AP (halifax-mapped.nt, gtfs.ttl): 1 feed, conforms: True

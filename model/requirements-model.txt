@@ -1,0 +1,9 @@
+# The learning layer (model/): not part of the stack, run by hand.
+# Pins as in the project's requirements. On Linux, install PyTorch's CPU
+# build first: pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
+rdflib==7.6.0
+numpy
+torch==2.8.0
+torch-geometric==2.8.0.post1
+pykeen==1.11.1
+scikit-learn==1.7.2

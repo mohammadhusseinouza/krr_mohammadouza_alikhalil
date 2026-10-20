@@ -1,0 +1,13 @@
+python baseline.py   (scikit-learn 1.7.2, torch 2.8.0, 2026-10-20; graph: Session 5's halifax-mapped.nt)
+9,239 trips, 217 night trips (2.3%). Guessing scores PR-AUC 0.023; "never a night trip" scores accuracy 0.977.
+
+1. random split, last hour kept      night in test  65  PR-AUC 0.996  ROC-AUC 1.000  precision@100 0.65  accuracy 0.989
+2. random split, first hour kept     night in test  65  PR-AUC 0.989  ROC-AUC 1.000  precision@100 0.65  accuracy 0.988
+3. random split                      night in test  65  PR-AUC 0.102  ROC-AUC 0.773  precision@100 0.10  accuracy 0.841
+4. split by route, seed 0            night in test  61  PR-AUC 0.022  ROC-AUC 0.542  precision@100 0.00  accuracy 0.907
+4. split by route, seed 1            night in test  80  PR-AUC 0.040  ROC-AUC 0.598  precision@100 0.05  accuracy 0.952
+4. split by route, seed 2            night in test  46  PR-AUC 0.043  ROC-AUC 0.517  precision@100 0.03  accuracy 0.921
+4. split by route, seed 3            night in test  78  PR-AUC 0.027  ROC-AUC 0.493  precision@100 0.02  accuracy 0.880
+4. split by route, seed 4            night in test  45  PR-AUC 0.030  ROC-AUC 0.592  precision@100 0.04  accuracy 0.927
+
+29 of 81 routes have a night trip. A split by route puts about 30% of the routes, and their night trips, in the test set.

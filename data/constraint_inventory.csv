@@ -1,0 +1,8 @@
+rule,evidence_in_data,source_column_or_table
+"Every stop time belongs to a trip that exists and happens at a stop that exists","0 of 324,165 stop times break it (rule_checks.py, check 1)","stop_times.trip_id, stop_times.stop_id; trips; stops"
+"Inside a trip, stop_sequence runs 1, 2, 3... with no gaps and times never go backwards","0 backward steps and 0 gaps across 9,239 trips (check 2)","stop_times.trip_id, stop_sequence, arrival_time"
+"A route in one direction shows one headsign, with a few exceptions","157 of 162 route-directions have one; 10C (both directions), 62, 72 and 9B have 2 or 3; route 72 spells 'Portland Hills' in two cases (check 3)","trips.route_id, direction_id, trip_headsign"
+"Vehicles stop at stops, never at a station; a parent_station is always a station","0 stop times at the 11 stations; 60 of 60 parent_station values are stations (check 4)","stops.location_type, parent_station; stop_times.stop_id"
+"A GTFS time is HH:MM:SS and may pass 24:00:00 for trips after midnight","76,774 of 324,165 arrival times start with a space and one hour digit (format broken); 6,847 are 24:00:00 or later, up to 26:00:00, on 217 trips (allowed) (check 5)","stop_times.arrival_time, departure_time"
+"A stop name does not identify a stop: the stop_id does","133 names, once the stop code is removed, are shared by 267 stops, 12 to 394 m apart; 93 OpenRefine clusters join names like 'Acadia St After Pleasant St' and 'Pleasant St After Acadia St', which are different stops (check 6, OpenRefine)","stops.stop_name, stop_id, stop_lat, stop_lon"
+"<your own rule, optional>","<the count that supports it>","<column or table>"

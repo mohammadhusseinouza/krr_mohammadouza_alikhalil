@@ -1,0 +1,5 @@
+# A query a model really could write: gtfs:routeId sounds right (the GTFS
+# column is route_id), but Linked GTFS, and so the Halifax graph, calls it gtfs:route.
+SELECT (COUNT(?trip) AS ?n) WHERE {
+  ?trip gtfs:routeId <https://ul.edu.lb/kr/id/route/halifax/1> .
+}

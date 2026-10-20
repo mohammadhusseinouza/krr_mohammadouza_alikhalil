@@ -1,0 +1,15 @@
+# The graph pipeline (pipeline/run.py). Pins as in the course's demos/requirements.txt.
+# Morph-KGC itself is installed separately with --no-deps (see pipeline/Dockerfile).
+rdflib==7.6.0
+pyoxigraph==0.5.11
+pyshacl==0.40.1
+requests==2.34.2
+python-dotenv==1.2.3
+pandas==2.3.3
+SQLAlchemy==2.0.54
+psycopg2-binary==2.9.13
+duckdb==1.5.5
+elementpath==4.8.0
+falcon==4.1.0
+jsonpath-python==1.0.6
+ruamel.yaml==0.18.16

@@ -1,0 +1,130 @@
+{
+ "04a428ad10f166cb": {
+  "model": "claude-opus-5-5",
+  "reply": "```sparql\nPREFIX gtfs: <http://vocab.gtfs.org/terms#>\nPREFIX tr: <https://ul.edu.lb/kr/transit#>\nSELECT (COUNT(DISTINCT ?trip) AS ?tripCount)\nWHERE {\n  { ?trip a gtfs:Trip } UNION { ?trip a tr:NightTrip }\n  ?trip gtfs:route <https://ul.edu.lb/kr/id/route/halifax/1> .\n}\n```"
+ },
+ "09d477b5204174f3": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX gtfs: <http://vocab.gtfs.org/terms#>\nSELECT ?route WHERE {\n  ?route a gtfs:Route ;\n         gtfs:routeType gtfs:Ferry .\n}"
+ },
+ "14c3ba17e58c7574": {
+  "model": "claude-opus-5-5",
+  "reply": "REFUSE: real-time vehicle positions or delays"
+ },
+ "16f7516dc6626b29": {
+  "model": "claude-opus-5-5",
+  "reply": "REFUSE: wheelchair accessibility of stops"
+ },
+ "19791834e037e0ac": {
+  "model": "claude-opus-5-5",
+  "reply": "```sparql\nPREFIX gtfs: <http://vocab.gtfs.org/terms#>\nPREFIX dct: <http://purl.org/dc/terms/>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nSELECT DISTINCT ?service WHERE {\n  ?service a gtfs:Service ;\n           gtfs:serviceRule ?rule .\n  ?rule a gtfs:CalendarDateRule ;\n        dct:date ?date ;\n        gtfs:dateAddition ?added .\n  FILTER(?date = \"2026-10-12\"^^xsd:date && ?added = false)\n}\n```"
+ },
+ "24e0b82c609d5220": {
+  "model": "claude-opus-5-5",
+  "reply": "REFUSE: ridership / passenger counts"
+ },
+ "26697bec53d7f985": {
+  "model": "claude-opus-5-5",
+  "reply": "REFUSE: ridership (passenger counts)"
+ },
+ "2c18a077e55257c3": {
+  "model": "claude-opus-5-5",
+  "reply": "SELECT (COUNT(DISTINCT ?trip) AS ?tripCount)\nWHERE {\n  ?trip gtfs:route <https://ul.edu.lb/kr/id/route/halifax/10A> .\n}"
+ },
+ "3204c49ff09aa7d7": {
+  "model": "claude-opus-5-5",
+  "reply": "SELECT DISTINCT ?route WHERE {\n  ?trip a tr:NightTrip ;\n        gtfs:route ?route .\n}"
+ },
+ "38846e7b4953dbf9": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX gtfs: <http://vocab.gtfs.org/terms#>\nPREFIX tr: <https://ul.edu.lb/kr/transit#>\nSELECT DISTINCT ?route WHERE {\n  ?trip a tr:NightTrip ;\n        gtfs:route ?route .\n}"
+ },
+ "3eb7f130ef5b3e67": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX gtfs: <http://vocab.gtfs.org/terms#>\nSELECT DISTINCT ?service WHERE {\n  ?service gtfs:serviceRule ?rule .\n  ?rule a gtfs:CalendarRule ;\n        gtfs:saturday true .\n}"
+ },
+ "4b1b63d02394637c": {
+  "model": "claude-opus-5-5",
+  "reply": "```sparql\nPREFIX gtfs: <http://vocab.gtfs.org/terms#>\nSELECT (COUNT(DISTINCT ?stop) AS ?stopCount)\nWHERE {\n  ?trip gtfs:route <https://ul.edu.lb/kr/id/route/halifax/1> .\n  ?stopTime gtfs:trip ?trip ;\n            gtfs:stop ?stop .\n}\n```"
+ },
+ "529d77036456defd": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nSELECT ?name WHERE {\n  <https://ul.edu.lb/kr/id/stop/halifax/6001> foaf:name ?name .\n}"
+ },
+ "550c9bbfdce93175": {
+  "model": "claude-opus-5-5",
+  "reply": "SELECT DISTINCT ?service WHERE {\n  ?service a gtfs:Service ;\n           gtfs:serviceRule ?rule .\n  ?rule a gtfs:CalendarRule ;\n        gtfs:saturday true .\n}"
+ },
+ "557691dd13d777c6": {
+  "model": "claude-opus-5-5",
+  "reply": "```sparql\nPREFIX gtfs: <http://vocab.gtfs.org/terms#>\nPREFIX foaf: <http://xmlns.com/foaf/0.1/>\nPREFIX dct: <http://purl.org/dc/terms/>\n\nSELECT DISTINCT ?stop ?stopName ?stopId\nWHERE {\n  ?station a gtfs:Station ;\n           foaf:name ?stationName .\n  FILTER(LCASE(STR(?stationName)) = \"bridge terminal\")\n  ?stop a gtfs:Stop ;\n        gtfs:parentStation ?station .\n  OPTIONAL { ?stop foaf:name ?stopName }\n  OPTIONAL { ?stop dct:identifier ?stopId }\n}\nORDER BY ?stopName\n```"
+ },
+ "6061ed683cc1aaec": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX tr: <https://ul.edu.lb/kr/transit#>\nSELECT (COUNT(DISTINCT ?trip) AS ?nightTrips) WHERE {\n  ?trip a tr:NightTrip .\n}"
+ },
+ "7474ac59f5e40d1a": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX gtfs: <http://vocab.gtfs.org/terms#>\nSELECT DISTINCT ?stop WHERE {\n  ?trip gtfs:route <https://ul.edu.lb/kr/id/route/halifax/FerD> .\n  ?stopTime gtfs:trip ?trip ;\n            gtfs:stop ?stop .\n}"
+ },
+ "84ef6a7e615a674a": {
+  "model": "claude-opus-5-5",
+  "reply": "SELECT (COUNT(DISTINCT ?trip) AS ?count) WHERE { ?trip a tr:NightTrip . }"
+ },
+ "9a77eebc8281e00b": {
+  "model": "claude-opus-5-5",
+  "reply": "SELECT DISTINCT ?route WHERE {\n  ?route a gtfs:Route ;\n         gtfs:routeType gtfs:Ferry .\n}"
+ },
+ "9eda49dbd73103cc": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX gtfs: <http://vocab.gtfs.org/terms#>\nSELECT ?route (COUNT(DISTINCT ?trip) AS ?trips) WHERE {\n  ?trip gtfs:route ?route .\n} GROUP BY ?route\nORDER BY DESC(?trips)\nLIMIT 1"
+ },
+ "a585f1353a4f26a6": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX gtfs: <http://vocab.gtfs.org/terms#>\nPREFIX foaf: <http://xmlns.com/foaf/0.1/>\nSELECT DISTINCT ?stop ?stopName WHERE {\n  ?station a gtfs:Station ;\n           foaf:name ?stationName .\n  FILTER(CONTAINS(LCASE(STR(?stationName)), \"bridge terminal\"))\n  ?stop gtfs:parentStation ?station .\n  OPTIONAL { ?stop foaf:name ?stopName . }\n}"
+ },
+ "a9ad76d89dfd1436": {
+  "model": "claude-opus-5-5",
+  "reply": "REFUSE: wheelchair accessibility of stops"
+ },
+ "addc26d66b15cc45": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX gtfs: <http://vocab.gtfs.org/terms#>\nSELECT (COUNT(DISTINCT ?trip) AS ?trips) WHERE {\n  ?trip gtfs:route <https://ul.edu.lb/kr/id/route/halifax/10A> .\n}"
+ },
+ "b3bcc43b64f09ce1": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX gtfs: <http://vocab.gtfs.org/terms#>\nSELECT (COUNT(DISTINCT ?stop) AS ?stopCount) WHERE {\n  ?trip gtfs:route <https://ul.edu.lb/kr/id/route/halifax/1> .\n  ?stopTime gtfs:trip ?trip ;\n            gtfs:stop ?stop .\n}"
+ },
+ "b511640a5e2d4806": {
+  "model": "claude-opus-5-5",
+  "reply": "```sparql\nPREFIX gtfs: <http://vocab.gtfs.org/terms#>\nPREFIX tr: <https://ul.edu.lb/kr/transit#>\nSELECT ?route (COUNT(DISTINCT ?trip) AS ?tripCount)\nWHERE {\n  VALUES ?tripType { gtfs:Trip tr:NightTrip }\n  ?trip a ?tripType ;\n        gtfs:route ?route .\n}\nGROUP BY ?route\nORDER BY DESC(?tripCount)\nLIMIT 1\n```"
+ },
+ "bbcdea297de74f7c": {
+  "model": "claude-opus-5-5",
+  "reply": "```sparql\nPREFIX gtfs: <http://vocab.gtfs.org/terms#>\nPREFIX tr: <https://ul.edu.lb/kr/transit#>\nSELECT (COUNT(DISTINCT ?trip) AS ?count)\nWHERE {\n  VALUES ?type { gtfs:Trip tr:NightTrip }\n  ?trip a ?type .\n}\n```"
+ },
+ "c1c3d8814e3dd20b": {
+  "model": "claude-opus-5-5",
+  "reply": "REFUSE: real-time vehicle positions or delays (the graph holds only the scheduled timetable)"
+ },
+ "c42076d60962e245": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX gtfs: <http://vocab.gtfs.org/terms#>\nSELECT (COUNT(DISTINCT ?trip) AS ?count) WHERE {\n  ?trip gtfs:route <https://ul.edu.lb/kr/id/route/halifax/1> .\n}"
+ },
+ "d96bc6a734ce5f55": {
+  "model": "claude-opus-5-5",
+  "reply": "SELECT DISTINCT ?stop ?name WHERE {\n  ?trip gtfs:route <https://ul.edu.lb/kr/id/route/halifax/FerD> .\n  ?st gtfs:trip ?trip ;\n      gtfs:stop ?stop .\n  OPTIONAL { ?stop foaf:name ?name }\n}"
+ },
+ "d9f1ff9b9bb50a6f": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX gtfs: <http://vocab.gtfs.org/terms#>\nPREFIX dct: <http://purl.org/dc/terms/>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nSELECT DISTINCT ?service WHERE {\n  ?service gtfs:serviceRule ?rule .\n  ?rule a gtfs:CalendarDateRule ;\n        dct:date \"2026-10-12\"^^xsd:date ;\n        gtfs:dateAddition false .\n}"
+ },
+ "eb1da9d0275a220d": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX gtfs: <http://vocab.gtfs.org/terms#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT (COUNT(DISTINCT ?trip) AS ?trips) WHERE {\n  ?trip a/rdfs:subClassOf* gtfs:Trip .\n}"
+ },
+ "f199e26622be0504": {
+  "model": "claude-opus-5-5",
+  "reply": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nSELECT ?name WHERE {\n  <https://ul.edu.lb/kr/id/stop/halifax/6001> foaf:name ?name .\n}"
+ }
+}

@@ -1,0 +1,6 @@
+python build_graph.py   (rdflib 7.6.0, torch-geometric 2.8.0.post1, 2026-10-20; Windows 11 CPU)
+read halifax-mapped.nt: kept 2,007,679 triples in 24.3 s
+nodes: trip 9,239, route 81, service 9, shape 183, block 756, stop 2,347
+edges: route 9,239, service 9,239, shape 9,239, block 9,239, callsAt 324,165, next 2,697
+label: 217 night trips of 9,239 (2.3%), taken out of the features (the classes tr:NightTrip and gtfs:Trip, and every clock time)
+written: data/halifax-graph.pt

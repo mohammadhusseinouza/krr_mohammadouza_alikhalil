@@ -1,0 +1,7 @@
+# Only what the access layer needs inside its container (pins as in the project's requirements).
+requests==2.34.2
+rdflib==7.6.0
+pyoxigraph==0.5.11
+python-dotenv==1.2.3
+ruamel.yaml==0.18.16
+anthropic==1.15.0

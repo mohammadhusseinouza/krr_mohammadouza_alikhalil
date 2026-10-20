@@ -1,0 +1,265 @@
+## shapes.ttl: the SHACL gate. Any Violation stops the pipeline (pipeline/run.py).
+##
+## The Halifax shapes AFTER TRIAGE (triage.md). Same rules as shapes-v0.ttl; each
+## change is marked TRIAGE with the decision and the evidence behind it:
+## was the shape wrong, the conversion, or the data?
+##
+##   first draft  23,208 violations (9,239 trip shape, 13,694 times in days,
+##                268 shared stop names, 5 headsigns, 2 services without a weekly rule)
+##   after triage      0 violations, 13,699 warnings (13,694 times, 5 headsigns),
+##                268 info (shared stop names)
+##   on the mapped graph (build/graph.nt, times fixed in the mapping):
+##                0 violations, 5 warnings (headsigns), 268 info
+##
+## Targets the graph the mapping writes (mapping/mapping.ttl): Linked GTFS
+## classes and properties. (The first drafts ran on Session 2's converter.)
+## Each shape names the Session 1 rule it comes from (rule_checks.py,
+## checks 1 to 6). SHACL 1.0 (W3C Recommendation, 2017).
+
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix geo:  <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix gtfs: <http://vocab.gtfs.org/terms#> .
+@prefix tr:   <https://ul.edu.lb/kr/transit#> .
+@prefix trs:  <https://ul.edu.lb/kr/transit/shapes#> .
+
+## The prefixes the SPARQL constraints below use, declared the standard way
+## (sh:declare on an ontology node), so any SHACL engine accepts them.
+<https://ul.edu.lb/kr/transit/shapes> a owl:Ontology ;
+    rdfs:label "Halifax shapes, after triage" ;
+    sh:declare [ sh:prefix "gtfs" ; sh:namespace "http://vocab.gtfs.org/terms#"^^xsd:anyURI ] ,
+               [ sh:prefix "tr" ; sh:namespace "https://ul.edu.lb/kr/transit#"^^xsd:anyURI ] ,
+               [ sh:prefix "foaf" ; sh:namespace "http://xmlns.com/foaf/0.1/"^^xsd:anyURI ] ,
+               [ sh:prefix "xsd" ; sh:namespace "http://www.w3.org/2001/XMLSchema#"^^xsd:anyURI ] .
+
+########################################################################
+## Core constraints: one shape per kind of thing. A night trip is typed
+## only tr:NightTrip; sh:targetClass gtfs:Trip still reaches it, through
+## tr:NightTrip rdfs:subClassOf gtfs:Trip in the data graph.
+########################################################################
+
+## Session 1, checks 1, 4 and 5: a stop time belongs to a real trip, calls
+## at a stop (never at a station), and has two times, each written the
+## Linked GTFS way: hours since the start of the service day, which may
+## pass 24 (PT25H10M is 1:10 the next morning).
+trs:StopTimeShape a sh:NodeShape ;
+    rdfs:label "Every stop time" ;
+    sh:targetClass gtfs:StopTime ;
+    sh:property [
+        sh:path gtfs:trip ; sh:minCount 1 ; sh:maxCount 1 ; sh:class gtfs:Trip ;
+        sh:name "trip" ; sh:message "A stop time belongs to exactly one trip, and it is a Trip."
+    ] ;
+    sh:property [
+        sh:path gtfs:stop ; sh:minCount 1 ; sh:maxCount 1 ; sh:class gtfs:Stop ;
+        sh:name "stop" ; sh:message "A stop time calls at exactly one stop, and it is a Stop, never a Station."
+    ] ;
+    sh:property [
+        sh:path gtfs:stopSequence ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:nonNegativeInteger ; sh:minInclusive 1 ;
+        sh:name "stop sequence"
+    ] ;
+    sh:property [
+        sh:path gtfs:arrivalTime ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:duration ;
+        sh:pattern "^PT([0-9]+H)?([0-9]+M)?([0-9]+S)?$" ; sh:severity sh:Warning ;
+        sh:name "arrival time" ; sh:message "A time is written in hours since the start of the service day, as Linked GTFS asks: PT25H10M, never in days." ;
+        rdfs:comment "TRIAGE: data written wrongly by the conversion. Every time past midnight, 6,847 of them, is in days: 25:10:00 is P1DT1H10M, not PT25H10M. convert_to_rdf.py writes PT25H10M, but rdflib rewrites an xsd:duration into its own form as soon as it creates the value, so halifax.ttl holds P1DT1H10M. The value is the same duration; the text is not what Linked GTFS asks for, and any tool that reads the hours from the text gets them wrong. (validate.py turns that rewriting off, rdflib.NORMALIZE_LITERALS = False, so it checks the text the file really holds.) Fix it in the mapping (Session 5); a Warning until then."
+    ] ;
+    sh:property [
+        sh:path gtfs:departureTime ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:duration ;
+        sh:pattern "^PT([0-9]+H)?([0-9]+M)?([0-9]+S)?$" ; sh:severity sh:Warning ;
+        sh:name "departure time" ; sh:message "A time is written in hours since the start of the service day, as Linked GTFS asks: PT25H10M, never in days." ;
+        rdfs:comment "TRIAGE: data written wrongly by the conversion. Every time past midnight, 6,847 of them, is in days: 25:10:00 is P1DT1H10M, not PT25H10M. convert_to_rdf.py writes PT25H10M, but rdflib rewrites an xsd:duration into its own form as soon as it creates the value, so halifax.ttl holds P1DT1H10M. The value is the same duration; the text is not what Linked GTFS asks for, and any tool that reads the hours from the text gets them wrong. (validate.py turns that rewriting off, rdflib.NORMALIZE_LITERALS = False, so it checks the text the file really holds.) Fix it in the mapping (Session 5); a Warning until then."
+    ] .
+
+trs:TripShape a sh:NodeShape ;
+    rdfs:label "Every trip" ;
+    sh:targetClass gtfs:Trip ;
+    sh:property [
+        sh:path gtfs:route ; sh:minCount 1 ; sh:maxCount 1 ; sh:class gtfs:Route ;
+        sh:name "route" ; sh:message "A trip runs on exactly one route, and it is a Route."
+    ] ;
+    sh:property [
+        sh:path gtfs:service ; sh:minCount 1 ; sh:maxCount 1 ; sh:class gtfs:Service ;
+        sh:name "service"
+    ] ;
+    sh:property [
+        sh:path gtfs:headsign ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ;
+        sh:name "headsign"
+    ] ;
+    sh:property [
+        sh:path gtfs:direction ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:boolean ;
+        sh:name "direction"
+    ] ;
+    sh:property [
+        sh:path gtfs:shape ; sh:minCount 1 ; sh:maxCount 1 ; sh:nodeKind sh:IRI ;
+        sh:name "shape" ; sh:message "A trip follows exactly one shape, named by an IRI." ;
+        rdfs:comment "TRIAGE: shape wrong for this graph. The first draft asked for sh:class gtfs:Shape, and all 9,239 trips failed: Session 2 chose not to convert shapes.txt (no question needs the drawn line), so a shape IRI is a link to a node this graph does not describe. The rule now asks what the graph can promise, one IRI. If a later session converts shapes.txt, put sh:class back."
+    ] .
+
+trs:RouteShape a sh:NodeShape ;
+    rdfs:label "Every route" ;
+    sh:targetClass gtfs:Route ;
+    sh:property [
+        sh:path gtfs:shortName ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:name "short name"
+    ] ;
+    sh:property [
+        sh:path gtfs:routeType ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( gtfs:Bus gtfs:Ferry ) ;
+        sh:name "route type" ; sh:message "Halifax runs buses and ferries: route type is gtfs:Bus or gtfs:Ferry."
+    ] ;
+    sh:property [
+        sh:path gtfs:agency ; sh:minCount 1 ; sh:maxCount 1 ; sh:class gtfs:Agency ;
+        sh:name "agency"
+    ] .
+
+## Session 1, check 4: a stop's parent is a station. Positions inside the
+## area the feed covers: a stop at 0, 0 is a missing value written as a
+## number.
+trs:StopShape a sh:NodeShape ;
+    rdfs:label "Every stop" ;
+    sh:targetClass gtfs:Stop ;
+    sh:property [
+        sh:path dct:identifier ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:name "stop id"
+    ] ;
+    sh:property [
+        sh:path foaf:name ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:name "stop name"
+    ] ;
+    sh:property [
+        sh:path geo:lat ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ;
+        sh:minInclusive 44.4 ; sh:maxInclusive 45.1 ;
+        sh:name "latitude" ; sh:message "A Halifax stop lies between latitude 44.4 and 45.1."
+    ] ;
+    sh:property [
+        sh:path geo:long ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ;
+        sh:minInclusive -64.1 ; sh:maxInclusive -63.0 ;
+        sh:name "longitude" ; sh:message "A Halifax stop lies between longitude -64.1 and -63.0."
+    ] ;
+    sh:property [
+        sh:path gtfs:parentStation ; sh:maxCount 1 ; sh:class gtfs:Station ;
+        sh:name "parent station" ; sh:message "A stop's parent is a Station."
+    ] .
+
+## Every service has rules that say when it runs: a weekly timetable (a
+## row of calendar.txt), dates (rows of calendar_dates.txt), or both.
+trs:ServiceShape a sh:NodeShape ;
+    rdfs:label "Every service" ;
+    sh:targetClass gtfs:Service ;
+    sh:property [
+        sh:path gtfs:serviceRule ; sh:minCount 1 ;
+        sh:name "service rule" ; sh:message "A service has at least one rule, weekly or for one date." ;
+        rdfs:comment "TRIAGE: shape wrong. The first draft asked every service for a weekly rule (a row of calendar.txt), and 259.1141.3 and 259.1143.3 failed. GTFS allows a service defined by calendar_dates.txt alone, one date at a time (Session 1: 66 rows, 10 trips). The rule now asks for at least one rule of either kind."
+    ] .
+
+trs:CalendarDateRuleShape a sh:NodeShape ;
+    rdfs:label "Every calendar date rule" ;
+    sh:targetClass gtfs:CalendarDateRule ;
+    sh:property [
+        sh:path dct:date ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:date ;
+        sh:name "date"
+    ] ;
+    sh:property [
+        sh:path gtfs:dateAddition ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:boolean ;
+        sh:name "added or removed"
+    ] .
+
+########################################################################
+## SPARQL constraints: rules that compare one node with other nodes of
+## the graph. Core SHACL cannot say them. The query returns one row per
+## problem; $this is the node being checked.
+##
+## Times: SPARQL cannot compare two xsd:duration values (rdflib, and so
+## pySHACL, quietly treats every such comparison as an error, which makes
+## the FILTER false). The night trip rule below reads the hours from the
+## text instead. A time may be written in days ("P1DT1H10M" is 25:10:00):
+## that is what the Session 2 graph holds for every time past midnight
+## (see the arrival time rule above).
+########################################################################
+
+## Session 1, check 2: inside a trip, stop_sequence runs 1, 2, 3... with no
+## gap. One aggregate per trip: the numbers start at 1 and the last one
+## equals the number of stops (a repeated number shows up the same way).
+## The other half of check 2, "time never goes backwards", is in
+## trip-order-shape.ttl, on its own: see the comment there for why.
+trs:TripSequenceShape a sh:NodeShape ;
+    rdfs:label "A trip's stops are numbered 1, 2, 3... without gaps" ;
+    sh:targetClass gtfs:Trip ;
+    sh:sparql [
+        sh:message "Its {?n} stops are numbered from {?first} to {?last}." ;
+        sh:prefixes <https://ul.edu.lb/kr/transit/shapes> ;
+        sh:select """
+            SELECT $this ?n ?first ?last WHERE {
+                { SELECT $this (COUNT(?st) AS ?n) (MIN(?s) AS ?first) (MAX(?s) AS ?last) WHERE {
+                    ?st gtfs:trip $this ; gtfs:stopSequence ?s .
+                  } GROUP BY $this }
+                FILTER (?first != 1 || ?last != ?n)
+            }"""
+    ] .
+
+## Session 1, check 5: a time past 24:00:00 is allowed, and it is what makes
+## a night trip. A trip has one exactly when it is typed tr:NightTrip.
+trs:NightTripShape a sh:NodeShape ;
+    rdfs:label "A trip is a night trip exactly when it runs past midnight" ;
+    sh:targetClass gtfs:Trip ;
+    sh:sparql [
+        sh:message "Typed a night trip: {?typed}. Runs past midnight: {?late}." ;
+        sh:prefixes <https://ul.edu.lb/kr/transit/shapes> ;
+        sh:select """
+            SELECT $this ?typed ?late WHERE {
+                BIND (EXISTS { $this a tr:NightTrip } AS ?typed)
+                BIND (EXISTS { ?st gtfs:trip $this ; gtfs:arrivalTime ?t .
+                               FILTER (CONTAINS(STR(?t), "D")
+                                       || xsd:integer(STRBEFORE(STRAFTER(STR(?t), "PT"), "H")) >= 24) } AS ?late)
+                FILTER (?typed != ?late)
+            }"""
+    ] .
+
+## Session 1, check 3: a route, in one direction, shows one headsign.
+## TRIAGE: the rule is a pattern, not a law. 157 of 162 route-directions
+## have one headsign (Session 1); the other 5 are short or diverted trips
+## (10C, 62, 9B) and one spelling, route 72's "Portland Hills" and
+## "PORTLAND HILLS", which is the data's fault. All 5 are Warnings: worth
+## a look by the data owner, not a reason to stop the feed.
+trs:HeadsignShape a sh:NodeShape ;
+    rdfs:label "A route shows one headsign per direction" ;
+    sh:targetClass gtfs:Route ;
+    sh:severity sh:Warning ;
+    sh:sparql [
+        sh:severity sh:Warning ;
+        sh:message "In direction {?dir}, trips of this route show {?n} different headsigns." ;
+        sh:prefixes <https://ul.edu.lb/kr/transit/shapes> ;
+        sh:select """
+            SELECT $this ?dir (COUNT(DISTINCT ?h) AS ?n) WHERE {
+                ?trip gtfs:route $this ; gtfs:direction ?dir ; gtfs:headsign ?h .
+            } GROUP BY $this ?dir
+            HAVING (COUNT(DISTINCT ?h) > 1)"""
+    ] .
+
+## Session 1, check 6: a stop's name, once its "(code)" is removed, is its
+## own. Every stop's name ends in " (code)", and no name has a second
+## bracket (Session 1), so the text before " (" is the name.
+## TRIAGE: shape wrong. Session 1 (check 6) showed that the stops sharing a
+## name are different stops, each with its own id and position, 12 to 394 m
+## apart. A name does not identify a stop. Kept as Info, not deleted: it is
+## the list Session 5's entity resolution must not merge by name.
+trs:StopNameShape a sh:NodeShape ;
+    rdfs:label "A stop shares its name with another stop" ;
+    sh:targetClass gtfs:Stop ;
+    sh:severity sh:Info ;
+    sh:sparql [
+        sh:severity sh:Info ;
+        sh:message "Stop {?other} has the same name, {?base}." ;
+        sh:prefixes <https://ul.edu.lb/kr/transit/shapes> ;
+        sh:select """
+            SELECT $this ?other ?base WHERE {
+                $this foaf:name ?name .
+                BIND (STRBEFORE(?name, " (") AS ?base)
+                ?other a gtfs:Stop ; foaf:name ?n2 .
+                FILTER (?other != $this && STRSTARTS(?n2, CONCAT(?base, " (")))
+            }"""
+    ] .

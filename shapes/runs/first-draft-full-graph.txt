@@ -1,0 +1,24 @@
+python validate.py --shapes halifax-shapes-v0.ttl   (pySHACL 0.40.1, rdflib 7.6.0, values read as written, 2026-10-19; 663 s wall time, including about 50 s to read the file)
+data: 2,035,434 triples from halifax.ttl
+shapes: halifax-shapes-v0.ttl
+  focus nodes     81  A route shows one headsign per direction
+  focus nodes  9,239  A trip is a night trip exactly when it runs past midnight
+  focus nodes  9,239  A trip's stops are numbered 1, 2, 3... without gaps
+  focus nodes     82  Every calendar date rule
+  focus nodes     81  Every route
+  focus nodes      9  Every service
+  focus nodes  2,347  Every stop
+  focus nodes 324,165  Every stop time
+  focus nodes  9,239  Every trip
+  focus nodes  2,347  No two stops share a name
+
+validated in 611.0 s. conforms (SHACL): False. 23,208 Violation, 0 Warning, 0 Info
+  Violation  9,239  Every trip | Class on shape   e.g. trip/4648930, trip/4648931, trip/4648932
+  Violation  6,847  Every stop time | Pattern on arrivalTime   e.g. stoptime/4649002/27, stoptime/4649002/28, stoptime/4649002/29
+  Violation  6,847  Every stop time | Pattern on departureTime   e.g. stoptime/4649002/27, stoptime/4649002/28, stoptime/4649002/29
+  Violation    268  No two stops share a name | SPARQL   e.g. stop/2005, stop/2006, stop/2021
+  Violation      5  A route shows one headsign per direction | SPARQL   e.g. route/10C, route/10C, route/62
+  Violation      2  Every service | QualifiedMinCount on serviceRule   e.g. service/259.1141.3, service/259.1143.3
+
+GATE: FAIL, 23,208 violations. Exit code 1.
+exit code 1

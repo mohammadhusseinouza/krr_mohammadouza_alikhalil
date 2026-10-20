@@ -1,0 +1,51 @@
+python ontop/run_ontop.py   (Ontop 5.5.0, PostgreSQL 16, JDK 21, Windows 11, 2026-10-19)
+
+Answers (CSV):
+  routeType,trips,nightTrips
+  http://vocab.gtfs.org/terms#Bus,9044,217
+  http://vocab.gtfs.org/terms#Ferry,412,0
+
+The SQL Ontop sent to PostgreSQL:
+WITH
+ontopcte0 AS ((SELECT trip_id FROM trips WHERE trip_id IN (
+            SELECT trip_id FROM stop_times
+            WHERE CAST(SUBSTR(TRIM(arrival_time), 1, LENGTH(TRIM(arrival_time)) - 6) AS INTEGER) >= 24
+               OR CAST(SUBSTR(TRIM(departure_time), 1, LENGTH(TRIM(departure_time)) - 6) AS INTEGER) >= 24))),
+ontopcte1 AS ((SELECT trip_id FROM trips WHERE trip_id NOT IN (
+            SELECT trip_id FROM stop_times
+            WHERE CAST(SUBSTR(TRIM(arrival_time), 1, LENGTH(TRIM(arrival_time)) - 6) AS INTEGER) >= 24
+               OR CAST(SUBSTR(TRIM(departure_time), 1, LENGTH(TRIM(departure_time)) - 6) AS INTEGER) >= 24)))
+SELECT SUM(CAST(CASE WHEN v11."v3" = 'https://ul.edu.lb/kr/transit#NightTrip' THEN '1' ELSE '0' END AS BIGINT)) AS "sum1", v11."v0" AS "v0", COUNT(*) AS "v5"
+FROM (SELECT DISTINCT v8."route_id" AS "route_id1m44", CASE     WHEN v9."route_type" = '0' THEN 'LightRail'
+    WHEN v9."route_type" = '1' THEN 'Subway'
+    WHEN v9."route_type" = '2' THEN 'Rail'
+    WHEN v9."route_type" = '3' THEN 'Bus'
+    WHEN v9."route_type" = '4' THEN 'Ferry'
+    WHEN v9."route_type" = '5' THEN 'CableCar'
+    WHEN v9."route_type" = '6' THEN 'Gondola'
+    WHEN v9."route_type" = '7' THEN 'Funicular'
+    ELSE NULL 
+END AS "v0", CAST(v7."trip_id0m2" AS TEXT) AS "v2", v7."v3" AS "v3"
+FROM ((SELECT v1.trip_id AS "trip_id0m2", 'https://ul.edu.lb/kr/transit#NightTrip' AS "v3"
+FROM ontopcte0 v1
+WHERE v1.trip_id IS NOT NULL
+)UNION ALL 
+(SELECT v3.trip_id AS "trip_id0m2", 'http://vocab.gtfs.org/terms#Trip' AS "v3"
+FROM ontopcte1 v3
+WHERE v3.trip_id IS NOT NULL
+)UNION ALL 
+(SELECT v5.trip_id AS "trip_id0m2", 'http://vocab.gtfs.org/terms#Trip' AS "v3"
+FROM ontopcte0 v5
+WHERE v5.trip_id IS NOT NULL
+)) v7, "trips" v8, "routes" v9
+WHERE ((v9."route_type" = '0' OR v9."route_type" = '1' OR v9."route_type" = '2' OR v9."route_type" = '3' OR v9."route_type" = '4' OR v9."route_type" = '5' OR v9."route_type" = '6' OR v9."route_type" = '7') AND CAST(v7."trip_id0m2" AS TEXT) = v8."trip_id" AND v8."trip_id" IS NOT NULL AND v8."route_id" = v9."route_id")
+) v11
+GROUP BY v11."v0"
+ORDER BY COUNT(*) DESC NULLS LAST
+
+python ontop/run_ontop.py --no-tbox   (the same question, without vocabulary.ttl)
+
+Answers (CSV):
+  routeType,trips,nightTrips
+  http://vocab.gtfs.org/terms#Bus,8827,217
+  http://vocab.gtfs.org/terms#Ferry,412,0

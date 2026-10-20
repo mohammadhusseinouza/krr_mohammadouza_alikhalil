@@ -1,0 +1,69 @@
+# Example queries for the access layer, in the SHACL vocabulary that
+# sparql-llm and the SIB endpoints use: one sh:SPARQLExecutable per example,
+# the question in rdfs:comment, the query in sh:select.
+# None of these is a question of the test set (questions.yaml).
+
+@prefix ex: <https://ul.edu.lb/kr/halifax/examples/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+ex:1 a sh:SPARQLExecutable, sh:SPARQLSelectExecutable ;
+    rdfs:comment "Which trips run on route FerD, with their headsign?" ;
+    sh:select """PREFIX gtfs: <http://vocab.gtfs.org/terms#>
+SELECT ?trip ?headsign WHERE {
+  ?trip gtfs:route <https://ul.edu.lb/kr/id/route/halifax/FerD> ;
+        gtfs:headsign ?headsign .
+}""" .
+
+ex:2 a sh:SPARQLExecutable, sh:SPARQLSelectExecutable ;
+    rdfs:comment "How many trips and how many night trips does each route have?" ;
+    sh:select """PREFIX gtfs: <http://vocab.gtfs.org/terms#>
+PREFIX tr: <https://ul.edu.lb/kr/transit#>
+SELECT ?route (COUNT(?trip) AS ?trips) (SUM(IF(?type = tr:NightTrip, 1, 0)) AS ?nightTrips) WHERE {
+  ?trip a ?type ; gtfs:route ?route .
+} GROUP BY ?route""" .
+
+ex:3 a sh:SPARQLExecutable, sh:SPARQLSelectExecutable ;
+    rdfs:comment "Which trips run on route 10A?" ;
+    sh:select """PREFIX gtfs: <http://vocab.gtfs.org/terms#>
+SELECT ?trip WHERE {
+  ?trip gtfs:route <https://ul.edu.lb/kr/id/route/halifax/10A> .
+}""" .
+
+ex:4 a sh:SPARQLExecutable, sh:SPARQLSelectExecutable ;
+    rdfs:comment "How many trips run on ferry routes, night trips included?" ;
+    sh:select """PREFIX gtfs: <http://vocab.gtfs.org/terms#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT (COUNT(DISTINCT ?trip) AS ?trips) WHERE {
+  ?trip a/rdfs:subClassOf* gtfs:Trip ;
+        gtfs:route/gtfs:routeType gtfs:Ferry .
+}""" .
+
+ex:5 a sh:SPARQLExecutable, sh:SPARQLSelectExecutable ;
+    rdfs:comment "Which headsigns do the trips of route 1 show?" ;
+    sh:select """PREFIX gtfs: <http://vocab.gtfs.org/terms#>
+SELECT DISTINCT ?headsign WHERE {
+  ?trip gtfs:route <https://ul.edu.lb/kr/id/route/halifax/1> ;
+        gtfs:headsign ?headsign .
+}""" .
+
+ex:6 a sh:SPARQLExecutable, sh:SPARQLSelectExecutable ;
+    rdfs:comment "From which date to which date does the weekly rule of service 259.0.1 run?" ;
+    sh:select """PREFIX gtfs: <http://vocab.gtfs.org/terms#>
+PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX schema: <http://schema.org/>
+SELECT ?start ?end WHERE {
+  <https://ul.edu.lb/kr/id/service/halifax/259.0.1> gtfs:serviceRule ?rule .
+  ?rule a gtfs:CalendarRule ;
+        dct:temporal [ schema:startDate ?start ; schema:endDate ?end ] .
+}""" .
+
+ex:7 a sh:SPARQLExecutable, sh:SPARQLSelectExecutable ;
+    rdfs:comment "Which stops does trip 4648930 call at, in order, with their departure time?" ;
+    sh:select """PREFIX gtfs: <http://vocab.gtfs.org/terms#>
+SELECT ?sequence ?stop ?departure WHERE {
+  ?stopTime gtfs:trip <https://ul.edu.lb/kr/id/trip/halifax/4648930> ;
+            gtfs:stop ?stop ;
+            gtfs:stopSequence ?sequence ;
+            gtfs:departureTime ?departure .
+} ORDER BY ?sequence""" .

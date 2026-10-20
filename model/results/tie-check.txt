@@ -1,0 +1,14 @@
+python tie_check.py   (2026-10-20, on build/graph.nt)
+5,160 serves links, 81 routes; the same splits as link_prediction.py
+
+seed 0: 516 hidden links
+  popularity  MRR  as reported 0.106  top 0.109  bottom 0.103  random 0.106   (287 of 516 links have a tie)
+  neighbours  MRR  as reported 0.889  top 0.890  bottom 0.889  random 0.889   (12 of 516 links have a tie)
+
+seed 1: 516 hidden links
+  popularity  MRR  as reported 0.104  top 0.104  bottom 0.103  random 0.104   (239 of 516 links have a tie)
+  neighbours  MRR  as reported 0.871  top 0.872  bottom 0.871  random 0.871   (12 of 516 links have a tie)
+
+seed 2: 516 hidden links
+  popularity  MRR  as reported 0.116  top 0.118  bottom 0.112  random 0.115   (290 of 516 links have a tie)
+  neighbours  MRR  as reported 0.878  top 0.879  bottom 0.876  random 0.878   (20 of 516 links have a tie)

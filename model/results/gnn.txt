@@ -1,0 +1,10 @@
+python gnn.py   (torch 2.8.0 CPU, torch-geometric 2.8.0.post1, 2026-10-20; Windows 11 CPU, about 45 s)
+random split, training seed 0        night in test  65  PR-AUC 0.049  ROC-AUC 0.690  precision@100 0.04  accuracy 0.885
+random split, training seed 1        night in test  65  PR-AUC 0.045  ROC-AUC 0.716  precision@100 0.02  accuracy 0.869
+random split, training seed 2        night in test  65  PR-AUC 0.094  ROC-AUC 0.717  precision@100 0.05  accuracy 0.910
+  (90,502 parameters)
+split by route, seed 0               night in test  61  PR-AUC 0.021  ROC-AUC 0.491  precision@100 0.02  accuracy 0.944
+split by route, seed 1               night in test  80  PR-AUC 0.031  ROC-AUC 0.489  precision@100 0.04  accuracy 0.927
+split by route, seed 2               night in test  46  PR-AUC 0.024  ROC-AUC 0.540  precision@100 0.03  accuracy 0.938
+split by route, seed 3               night in test  78  PR-AUC 0.025  ROC-AUC 0.462  precision@100 0.04  accuracy 0.932
+split by route, seed 4               night in test  45  PR-AUC 0.024  ROC-AUC 0.530  precision@100 0.02  accuracy 0.923

@@ -1,0 +1,15 @@
+python pipeline/check_stack.py   (2026-10-20, against docker compose up --build from this repository, release 1.1.0; the last two checks call claude-opus-5-5 through serve.py)
+Gate (Session 4)
+  PASS  SHACL gate: validated in 652.6 s. conforms (SHACL): False. 0 Violation, 5 Warning, 268 Info (passed 2026-10-20T19:06:16+00:00)
+Endpoint (Session 2)
+  PASS  triples in the default graph: 2,035,614
+  PASS  trips on route 1: 496 (Session 2: 496)
+  PASS  the night trip trap: a gtfs:Trip finds 9,022, with subclasses 9,239 (Session 2: 9,022 and 9,239)
+Ontology (Session 3)
+  PASS  ontology release: the endpoint holds release <https://ul.edu.lb/kr/transit/1.1.0>
+Provenance (Session 4)
+  PASS  where the deployed graph comes from: 8 source files with their SHA-256, e.g. agency.txt sha256:bebed6abd114...
+Access layer (Session 7)
+  PASS  one question: How many trips run on route 1? -> ['496']
+  PASS  one refusal: # REFUSE: stop wheelchair accessibility
+exit code 0

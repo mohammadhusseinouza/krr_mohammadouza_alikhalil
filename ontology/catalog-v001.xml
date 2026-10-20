@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog prefer="public" xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+    <uri id="Linked GTFS, as published (fetched by data/fetch_data.py)" name="http://vocab.gtfs.org/terms#" uri="../data/linked-gtfs/gtfs.ttl"/>
+    <uri id="Linked GTFS, corrected copy" name="https://ul.edu.lb/kr/linked-gtfs-corrected" uri="./linked-gtfs-corrected.ttl"/>
+    <uri id="The ontology, release 1.0.0" name="https://ul.edu.lb/kr/transit#" uri="./ontology.ttl"/>
+</catalog>

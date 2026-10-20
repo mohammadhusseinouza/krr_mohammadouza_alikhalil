@@ -1,0 +1,36 @@
+# The SHACL gate in continuous integration (Session 4): on every push and pull
+# request, map the source and validate it. Any Violation fails the run (red),
+# and a red pull request is not merged. The same steps as the stack's pipeline,
+# without loading an endpoint.
+#
+# CI does not download the 29 MB feed: it maps and validates data/example.sql,
+# a real slice of it (7 trips). To see it go red: change one row on a branch
+# (shapes/triage.md, "The red run").
+
+name: SHACL gate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the pipeline
+        run: |
+          pip install -r pipeline/requirements-pipeline.txt
+          pip install --no-deps morph-kgc==2.10.0
+      - name: Map and validate the sample (fails on any Violation)
+        # data/example.sql: 7 real trips (data/make_example_sql.py), validated with
+        # the gate's shapes plus the time-order shape, too slow for the whole feed.
+        # The stack's own gate validates the whole feed before loading it.
+        run: python pipeline/run.py --sample --no-load

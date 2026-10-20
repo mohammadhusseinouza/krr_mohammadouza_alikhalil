@@ -1,0 +1,56 @@
+# The whole system, one command:   docker compose up --build
+#
+#   fuseki        the SPARQL endpoint (Session 2), dataset "kr"
+#   pipeline      runs once: fetch the feed (Session 1), map it (Session 5), SHACL gate
+#                 on the whole graph (Session 4), VoID, load; stops the stack if the data fails
+#   access-layer  questions in English (Session 7), on http://127.0.0.1:8000
+#
+# Every port listens on this computer only (127.0.0.1). The model key (Claude or
+# Gemini) lives in .env, which is never committed. The first run takes about
+# 15 minutes, most of it the gate; a restart with the same inputs skips the
+# gate (pipeline/run.py) and is up in about 3 minutes.
+
+services:
+  fuseki:
+    build: ./fuseki
+    ports:
+      - "127.0.0.1:3030:3030"
+    volumes:
+      - fuseki-data:/data
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: pipeline/Dockerfile
+    environment:
+      FUSEKI_URL: http://fuseki:3030
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./:/work
+    depends_on:
+      - fuseki
+    restart: "no"
+
+  access-layer:
+    build:
+      context: .
+      dockerfile: access-layer/Dockerfile
+    environment:
+      SPARQL_ENDPOINT: http://fuseki:3030/kr/sparql
+      VOID_FILE: /work/build/void.ttl
+    env_file:
+      - path: .env
+        required: true
+    volumes:
+      - ./build:/work/build:ro
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      pipeline:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  fuseki-data:

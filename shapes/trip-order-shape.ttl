@@ -1,0 +1,75 @@
+## trip-order-shape.ttl
+##
+## The second half of Session 1's check 2: inside a trip, the next stop is
+## never reached before the one before it is left. A right rule that is
+## expensive in this tool, so it lives in its own file:
+##
+##   python pipeline/run.py --sample --no-load     (CI: data/example.sql, 7 trips)
+##
+## The CI gate runs it on the sample (7 trips, under a second); the stack's
+## gate on the whole feed does not, and Session 1's pandas check covers it. Running it on
+## the full graph is possible but slow: measured on 300 of the 9,239 trips
+## (shape_timings.py, 2026-10-19), about 0.09 s per trip, so about 14 minutes.
+## Why it costs so much:
+##   1. Core SHACL compares two values of the same node (sh:lessThan); this
+##      rule compares a value of one stop time with a value of the next, so
+##      it needs SPARQL.
+##   2. SPARQL, in rdflib and so in pySHACL, cannot compare two
+##      xsd:duration values: the FILTER quietly treats the comparison as an
+##      error. Each time is turned into seconds with string functions, and a
+##      time past midnight is written in days in the Session 2 graph
+##      ("P1DT1H10M" is 25:10:00), so both forms are handled.
+##   3. pySHACL runs the query once per trip.
+## Finding the previous stop time by search (every pair of the trip's stop
+## times, then the pair whose numbers differ by one) cost 0.6 s per trip,
+## about 1.5 hours. This version builds the previous stop time's IRI from
+## the project's IRI convention (common/iri.py: stoptime/halifax/{trip}/
+## {sequence}) and looks it up: six times faster, and it relies on that
+## convention, which is a decision to write down, as here.
+## Session 1 checked the same rule with pandas in about a second: 0 backward
+## steps across 9,239 trips.
+
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix gtfs: <http://vocab.gtfs.org/terms#> .
+@prefix trs:  <https://ul.edu.lb/kr/transit/shapes#> .
+
+<https://ul.edu.lb/kr/transit/shapes/order> a owl:Ontology ;
+    rdfs:label "Halifax shapes: time order inside a trip" ;
+    sh:declare [ sh:prefix "gtfs" ; sh:namespace "http://vocab.gtfs.org/terms#"^^xsd:anyURI ] ,
+               [ sh:prefix "xsd" ; sh:namespace "http://www.w3.org/2001/XMLSchema#"^^xsd:anyURI ] .
+
+trs:TripOrderShape a sh:NodeShape ;
+    rdfs:label "A trip never reaches a stop before leaving the one before" ;
+    sh:targetClass gtfs:Trip ;
+    sh:sparql [
+        sh:message "Stop {?n} arrives before stop {?p} departs." ;
+        sh:prefixes <https://ul.edu.lb/kr/transit/shapes/order> ;
+        sh:select """
+            SELECT $this ?p ?n WHERE {
+                ?next gtfs:trip $this ; gtfs:stopSequence ?n ; gtfs:arrivalTime ?t .
+                FILTER (?n > 1)
+                BIND (?n - 1 AS ?p)
+                BIND (IRI(REPLACE(CONCAT(STR($this), "/", STR(?p)), "/trip/", "/stoptime/")) AS ?prev)
+                ?prev gtfs:departureTime ?d .
+                BIND (STR(?d) AS ?dtext)
+                BIND (IF(CONTAINS(?dtext, "T"), STRAFTER(?dtext, "T"), "") AS ?d1)
+                BIND (IF(CONTAINS(?d1, "H"), STRAFTER(?d1, "H"), ?d1) AS ?d2)
+                BIND (IF(CONTAINS(?d2, "M"), STRAFTER(?d2, "M"), ?d2) AS ?d3)
+                BIND (IF(CONTAINS(?dtext, "D"), xsd:integer(STRBEFORE(STRAFTER(?dtext, "P"), "D")) * 86400, 0)
+                      + IF(CONTAINS(?d1, "H"), xsd:integer(STRBEFORE(?d1, "H")) * 3600, 0)
+                      + IF(CONTAINS(?d2, "M"), xsd:integer(STRBEFORE(?d2, "M")) * 60, 0)
+                      + IF(CONTAINS(?d3, "S"), xsd:integer(STRBEFORE(?d3, "S")), 0) AS ?leave)
+                BIND (STR(?t) AS ?ttext)
+                BIND (IF(CONTAINS(?ttext, "T"), STRAFTER(?ttext, "T"), "") AS ?t1)
+                BIND (IF(CONTAINS(?t1, "H"), STRAFTER(?t1, "H"), ?t1) AS ?t2)
+                BIND (IF(CONTAINS(?t2, "M"), STRAFTER(?t2, "M"), ?t2) AS ?t3)
+                BIND (IF(CONTAINS(?ttext, "D"), xsd:integer(STRBEFORE(STRAFTER(?ttext, "P"), "D")) * 86400, 0)
+                      + IF(CONTAINS(?t1, "H"), xsd:integer(STRBEFORE(?t1, "H")) * 3600, 0)
+                      + IF(CONTAINS(?t2, "M"), xsd:integer(STRBEFORE(?t2, "M")) * 60, 0)
+                      + IF(CONTAINS(?t3, "S"), xsd:integer(STRBEFORE(?t3, "S")), 0) AS ?arrive)
+                FILTER (?arrive < ?leave)
+            }"""
+    ] .

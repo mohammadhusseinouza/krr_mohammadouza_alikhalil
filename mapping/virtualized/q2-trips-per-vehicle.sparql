@@ -1,0 +1,8 @@
+# Session 2's Q2, unchanged: trips and night trips per kind of vehicle.
+# In Session 2 it ran over a stored graph; here Ontop answers it straight
+# from the PostgreSQL tables, through halifax-mapping.ttl.
+PREFIX gtfs: <http://vocab.gtfs.org/terms#>
+PREFIX tr: <https://ul.edu.lb/kr/transit#>
+SELECT ?routeType (COUNT(?trip) AS ?trips) (SUM(IF(?type = tr:NightTrip, 1, 0)) AS ?nightTrips) WHERE {
+  ?trip a ?type ; gtfs:route/gtfs:routeType ?routeType .
+} GROUP BY ?routeType ORDER BY DESC(?trips)

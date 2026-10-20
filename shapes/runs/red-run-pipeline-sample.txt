@@ -1,0 +1,25 @@
+python pipeline/run.py --sample --no-load   (2026-10-20; data/example.sql with ONE row changed: trip 4648930's stop 2 calls at 10001, Bridge Terminal, a station, instead of stop 7605 inside it)
+1 source: the sample, data/example.sql (7 trips)
+2 map: 2,127 triples in 1 s -> build/graph.nt
+  data: 2,289 triples from graph.nt, ontology.ttl
+  shapes: shapes.ttl, trip-order-shape.ttl
+    focus nodes      4  A route shows one headsign per direction
+    focus nodes    123  A stop shares its name with another stop
+    focus nodes      7  A trip is a night trip exactly when it runs past midnight
+    focus nodes      7  A trip never reaches a stop before leaving the one before
+    focus nodes      7  A trip's stops are numbered 1, 2, 3... without gaps
+    focus nodes     60  Every calendar date rule
+    focus nodes      4  Every route
+    focus nodes      3  Every service
+    focus nodes    123  Every stop
+    focus nodes    163  Every stop time
+    focus nodes      7  Every trip
+  
+  validated in 2.6 s. conforms (SHACL): False. 1 Violation, 1 Warning, 0 Info
+    Violation      1  Every stop time | Class on stop   e.g. stoptime/4648930/2
+    Warning        1  A route shows one headsign per direction | SPARQL   e.g. route/72
+  
+  GATE: FAIL, 1 violations. Exit code 1.
+3 validate: validated in 2.6 s. conforms (SHACL): False. 1 Violation, 1 Warning, 0 Info -> build/shacl-gate.txt
+SHACL gate: the data has Violations, so the endpoint is not loaded. Read build/shacl-gate.txt.
+exit code 1
